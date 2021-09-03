@@ -1,7 +1,10 @@
+import os
+
 import requests
 import re
 from datetime import datetime as dt
 from bs4 import BeautifulSoup as bs
+import hashlib
 
 
 BASE_URL = "https://studente.unimi.it/ammissioni/g/graduatoriaprogrammati/"
@@ -81,7 +84,9 @@ def scrape(count):
         resp = sess.get(BASE_URL + x[1])
         with open(x[0], "wb") as fd:
             fd.write(resp.content)
-        scraped.append(x[0])
+        hash_ = str(hashlib.md5(resp.content).hexdigest())
+        os.rename(x[0], hash_ + "_" + x[0])
+        scraped.append(hash_ + "_" + x[0])
     return scraped, course
 
 
