@@ -35,6 +35,7 @@ def find_pdf(data):
 
 def scrape(count):
     sess = requests.Session()
+    scraped = []
 
     data = sess.get(BASE_URL + ENTRY).text
     links, buttons = find_updater_links(data)  # buttons[0] => next, buttons[1] => previous
@@ -71,6 +72,8 @@ def scrape(count):
         resp = sess.get(BASE_URL + x[1])
         with open(x[0], "wb") as fd:
             fd.write(resp.content)
+        scraped.append(x[0])
+    return scraped
 
 
 def main():
