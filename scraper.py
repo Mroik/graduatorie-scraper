@@ -33,6 +33,14 @@ def find_pdf(data):
     return ris
 
 
+def find_course(data):
+    soup = bs(data, "lxml")
+    spans = soup.find_all("span")
+    for x in spans:
+        if x.string and "Corso" in x.string:
+            return x.string.strip()
+
+
 def scrape(count):
     sess = requests.Session()
     scraped = []
@@ -62,18 +70,19 @@ def scrape(count):
             "Wicket-FocusedElementId": "{:x}".format(int(old_ids[count], 16) + 8)
         },
         data={
-            "id{:x}_hf_0".format(int(old_ids[count]) + 7): "",  # This might be always +7 or it might be +len(ids)
+            "id{:x}_hf_0".format(int(old_ids[count], 16) + 7): "",  # This might be always +7 or it might be +len(ids)
             "buttons:next": "1"
         }
     )
 
     pdfs = find_pdf(resp.text)
+    course = find_course(resp.text)
     for x in pdfs:
         resp = sess.get(BASE_URL + x[1])
         with open(x[0], "wb") as fd:
             fd.write(resp.content)
         scraped.append(x[0])
-    return scraped
+    return scraped, course
 
 
 def main():
@@ -81,7 +90,7 @@ def main():
     try:
         while True:
             scrape(count)
-            count += 1
+            count += 100
     except IndexError:
         return
 

@@ -14,10 +14,10 @@ def check_grad(bot, shared):
     try:
         count = 0
         while True:
-            temp = scrape(count)
+            temp, course = scrape(count)
             for x in temp:
                 if x not in scraped:
-                    chan.send_file(path=x)
+                    chan.send_file(path=x, caption=course)
                     scraped.append(x)
             count += 1
     except IndexError:
