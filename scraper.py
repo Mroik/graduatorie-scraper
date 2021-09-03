@@ -67,10 +67,10 @@ def scrape(count):
         headers={
             "Wicket-Ajax": "true",
             "Wicket-Ajax-BaseURL": "g/graduatoriaprogrammati/checkLogin.asp?0",
-            "Wicket-FocusedElementId": "{:x}".format(int(old_ids[count], 16) + 8)
+            "Wicket-FocusedElementId": "{:x}".format(int(old_ids[count], 16) + len(ids) + 1)
         },
         data={
-            "id{:x}_hf_0".format(int(old_ids[count], 16) + 7): "",  # This might be always +7 or it might be +len(ids)
+            "id{:x}_hf_0".format(int(old_ids[count], 16) + len(ids)): "",
             "buttons:next": "1"
         }
     )
@@ -90,7 +90,7 @@ def main():
     try:
         while True:
             scrape(count)
-            count += 100
+            count += 1
     except IndexError:
         return
 
