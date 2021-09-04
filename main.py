@@ -63,19 +63,14 @@ def main():
             scraped.append(pdf)
         if len(to_send) == 0:
             continue
-        try:
-            chat.send_media_group(to_send)  # Sometimes it raises a BadRequest not sure why
-        except RetryAfter as e:
-            # The data that was not sent will be sent next time
-            sleep(e.retry_after + 2)
-            for x in to_send:
-                hash_ = hashlib.md5(x.media.input_file_content).hexdigest()
-                scraped.remove(f"{hash_}_{x.media.filename}")
-        except BadRequest:
-            # The data that was not sent will be sent next time
-            for x in to_send:
-                hash_ = hashlib.md5(x.media.input_file_content).hexdigest()
-                scraped.remove(f"{hash_}_{x.media.filename}")
+        while True:
+            try:
+                chat.send_media_group(to_send)  # Sometimes it raises a BadRequest not sure why
+                break
+            except RetryAfter as e:
+                sleep(e.retry_after + 2)
+            except BadRequest:
+                sleep(10)
 
     save_data()
     updater.stop()
