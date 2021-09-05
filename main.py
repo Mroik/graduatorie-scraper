@@ -1,4 +1,3 @@
-import hashlib
 import os
 import json
 from time import sleep
@@ -45,6 +44,7 @@ def get_data():
 
 
 def main():
+    os.mkdir(DOWNLOADS)
     load_data()
 
     updater.start_polling()
