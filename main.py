@@ -32,18 +32,6 @@ def save_data():
         fd.write(json.dumps(scraped))
 
 
-def get_data():
-    data = []
-    try:
-        count = 0
-        while True:
-            temp, course = scrape(count)
-            data.append((temp, course))
-            count += 1
-    except IndexError:
-        return data
-
-
 def generate_caption(caption):
     caption = "📜 " + caption + "\n\n▶️ @studenti_unimi | studentiunimi.it"
     exp = re.compile(r"(?:\(CLASSE*\s)(\w+-\w+)", re.IGNORECASE)
@@ -64,7 +52,7 @@ def main():
     bot: Bot = updater.bot
     chat: Chat = bot.get_chat(CHANNEL_NAME)
 
-    data = get_data()
+    data = scrape()
     for section in data:
         to_send = []
         for pdf in section[0]:
