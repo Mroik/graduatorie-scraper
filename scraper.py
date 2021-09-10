@@ -43,6 +43,8 @@ def download_pdfs(sess, links):
         pass
     for x in range(len(links)):
         resp = sess.get("https://studente.unimi.it/graduatorie/" + links[x][1])
+        if resp.status_code != 200:
+            continue
         hash_ = hashlib.md5(resp.content).hexdigest()
         with open(f"{DOWNLOADS}/{hash_ + '_' + links[x][0]}", "wb") as fd:
             fd.write(resp.content)
