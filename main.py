@@ -60,8 +60,6 @@ def main():
                 to_send.append(pdf)
         send_group = []
         for pdf in to_send:
-            print("Sending", section[1])
-
             with open(f"{DOWNLOADS}/{pdf}", "rb") as fd:
                 input_document = InputMediaDocument(
                     fd,
@@ -71,6 +69,8 @@ def main():
                 )
             send_group.append(input_document)
             scraped.append(pdf)
+
+        print("Sending", section[1])
         if len(send_group) == 0:
             continue
         while True:

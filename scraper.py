@@ -1,8 +1,10 @@
 import hashlib
+from os import mkdir, rename
+import re
 
 import requests
 from bs4 import BeautifulSoup as bs
-from os import mkdir
+import pdfkit
 
 from cred import DOWNLOADS
 
@@ -52,6 +54,59 @@ def download_pdfs(sess, links):
     return scraped
 
 
+def generate_rankings(data):
+    try:
+        mkdir(DOWNLOADS)
+    except FileExistsError:
+        pass
+    ris = "<html><body><table border='1px solid'><tr><td colspan=2><b>"
+    students = []
+    course_name = ""
+    pub_date = ""
+    soup = bs(data, "lxml")
+    spans = soup.find_all("span")
+    tbody = soup.find("tbody")
+
+    # Find course name
+    for span in spans:
+        if span.string and "Corso " in span.string:
+            course_name = re.findall("(?<=in ).*", span.string.strip())[0]
+            ris += course_name + "</b></td></tr>"
+            break
+
+    # Find publish date
+    for span in spans:
+        if span.string and "Data di" in span.string:
+            pub_date = re.findall("\\d+/\\d+/\\d+", span.string.strip())[0]
+            pub_date = pub_date.replace("/", "-")
+
+    # Scrape rankings
+    for row in tbody.find_all("tr"):
+        cols = row.find_all("td")
+        students.append((int(cols[1].span.string.strip()), cols[0].a.string.strip()))
+
+    # Sorting
+    for x in range(len(students) - 1):
+        for y in range(x + 1, len(students)):
+            if students[x][0] > students[y][0]:
+                temp = students[x]
+                students[x] = students[y]
+                students[y] = temp
+
+    for student in students:
+        ris += "<tr>"
+        ris += f"<td>{student[0]}</td>"
+        ris += f"<td>{student[1]}</td>"
+        ris += "</tr>"
+    ris += "</table></body></html>"
+    filename = f"{DOWNLOADS}/{course_name}_{pub_date}.pdf"
+    pdfkit.from_string(ris, filename, options={"--log-level": "none"})
+    with open(filename, "rb") as fd:
+        hash_ = hashlib.md5(fd.read()).hexdigest()
+    rename(filename, f"{DOWNLOADS}/{hash_}_{course_name}_{pub_date}.pdf")
+    return f"{hash_}_{course_name}_{pub_date}.pdf"
+
+
 def scrape():
     sess = requests.Session()
     scraped = []
@@ -62,7 +117,9 @@ def scrape():
     for link in links:
         resp = sess.get(BASE_URL + link)
         pdf_links = find_pdf(resp.text)
-        scraped.append(((download_pdfs(sess, pdf_links)), find_course(resp.text)))
+        pdfs = download_pdfs(sess, pdf_links)
+        pdfs.append(generate_rankings(resp.text))
+        scraped.append((pdfs, find_course(resp.text)))
     return scraped
 
 
