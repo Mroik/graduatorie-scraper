@@ -116,6 +116,8 @@ def scrape():
 
     for link in links:
         resp = sess.get(BASE_URL + link)
+        if resp.status_code != 200:
+            continue
         pdf_links = find_pdf(resp.text)
         pdfs = download_pdfs(sess, pdf_links)
         pdfs.append(generate_rankings(resp.text))
