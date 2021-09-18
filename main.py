@@ -13,23 +13,28 @@ from scraper import scrape
 
 updater = Updater(token=BOT_KEY)
 scraped = []
+rankings_generated = []
 
 
 def load_data():
     global scraped
+    global rankings_generated
     if DOWNLOADS not in os.listdir():
         os.mkdir(DOWNLOADS)
     if "data.json" in os.listdir(DOWNLOADS):
         with open(f"{DOWNLOADS}/data.json", "r") as fd:
-            scraped = json.loads(fd.read())
+            data = json.loads(fd.read())
+            scraped = data[0]
+            rankings_generated = data[1]
 
 
 def save_data():
     global scraped
+    global rankings_generated
     if DOWNLOADS not in os.listdir():
         os.mkdir(DOWNLOADS)
     with open(f"{DOWNLOADS}/data.json", "w") as fd:
-        fd.write(json.dumps(scraped))
+        fd.write(json.dumps([scraped, rankings_generated]))
 
 
 def generate_caption(caption):
@@ -52,8 +57,8 @@ def main():
     bot: Bot = updater.bot
     chat: Chat = bot.get_chat(CHANNEL_NAME)
 
-    data = scrape()
-    for section in data:
+    docs, rankings = scrape()
+    for section in docs:
         to_send = []
         for pdf in section[0]:
             if pdf not in scraped:
@@ -69,6 +74,14 @@ def main():
                 )
             send_group.append(input_document)
             scraped.append(pdf)
+
+        if rankings[section[1]] not in rankings_generated:
+            with open(f"{DOWNLOADS}/{rankings[section[1]]}", "rb") as fd:
+                send_group.append(InputMediaDocument(
+                    fd,
+                    filename=rankings[section[1]]
+                ))
+            rankings_generated.append(rankings[section[1]])
 
         print("Sending", section[1])
         if len(send_group) == 0:

@@ -99,17 +99,15 @@ def generate_rankings(data):
         ris += f"<td>{student[1]}</td>"
         ris += "</tr>"
     ris += "</table></body></html>"
-    filename = f"{DOWNLOADS}/{course_name}_{pub_date}.pdf"
-    pdfkit.from_string(ris, filename, options={"--log-level": "none"})
-    with open(filename, "rb") as fd:
-        hash_ = hashlib.md5(fd.read()).hexdigest()
-    rename(filename, f"{DOWNLOADS}/{hash_}_{course_name}_{pub_date}.pdf")
-    return f"{hash_}_{course_name}_{pub_date}.pdf"
+    filename = f"{course_name}_{pub_date}.pdf"
+    pdfkit.from_string(ris, f"{DOWNLOADS}/" + filename, options={"--log-level": "none"})
+    return filename
 
 
 def scrape():
     sess = requests.Session()
     scraped = []
+    rankings_generated = {}
 
     resp = sess.get(BASE_URL + ENTRY)
     links = find_links(resp.text)
@@ -119,14 +117,18 @@ def scrape():
         if resp.status_code != 200:
             continue
         pdf_links = find_pdf(resp.text)
-        pdfs = download_pdfs(sess, pdf_links)
-        pdfs.append(generate_rankings(resp.text))
-        scraped.append((pdfs, find_course(resp.text)))
-    return scraped
+        course_name = find_course(resp.text)
+        rankings_generated[course_name] = generate_rankings(resp.text)
+        scraped.append(((download_pdfs(sess, pdf_links)), course_name))
+    return scraped, rankings_generated
 
 
 def main():
-    scrape()
+    a, b = scrape()
+    print(a)
+    print("------")
+    print(b)
+    print("------")
     print("Done")
 
 
