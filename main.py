@@ -66,26 +66,20 @@ def main():
         send_group = []
         for pdf in to_send:
             with open(f"{DOWNLOADS}/{pdf}", "rb") as fd:
-                input_document = InputMediaDocument(
-                    fd,
-                    # attach caption only to the last element in the group
-                    caption=generate_caption(section[1]) if len(send_group) == len(to_send)-1 else None,
-                    filename=pdf[33:],
-                )
+                input_document = InputMediaDocument(fd, filename=pdf[33:])
             send_group.append(input_document)
             scraped.append(pdf)
 
         if rankings[section[1]] not in rankings_generated:
             with open(f"{DOWNLOADS}/{rankings[section[1]]}", "rb") as fd:
-                send_group.append(InputMediaDocument(
-                    fd,
-                    filename=rankings[section[1]]
-                ))
+                send_group.append(InputMediaDocument(fd, filename=rankings[section[1]]))
             rankings_generated.append(rankings[section[1]])
 
-        print("Sending", section[1])
         if len(send_group) == 0:
             continue
+        send_group[len(send_group) - 1].caption = generate_caption(section[1])
+
+        print("Sending", section[1])
         while True:
             try:
                 chat.send_media_group(send_group)  # Sometimes it raises a BadRequest not sure why
