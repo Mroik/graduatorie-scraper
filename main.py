@@ -82,7 +82,7 @@ def main():
         print("Sending", section[1])
         while True:
             try:
-                chat.send_media_group(send_group)  # Sometimes it raises a BadRequest not sure why
+                chat.send_media_group(send_group, disable_notification=True)  # Sometimes it raises a BadRequest not sure why
                 break
             except RetryAfter as e:
                 sleep(e.retry_after + 2)
