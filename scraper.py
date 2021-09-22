@@ -99,7 +99,7 @@ def generate_rankings(data):
         ris += f"<td>{student[1]}</td>"
         ris += "</tr>"
     ris += "</table></body></html>"
-    filename = f"{course_name}_{pub_date}.pdf"
+    filename = f"{course_name.replace('/', '')}_{pub_date}.pdf"
     pdfkit.from_string(ris, f"{DOWNLOADS}/" + filename, options={"--log-level": "none"})
     return filename
 
