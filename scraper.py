@@ -83,6 +83,8 @@ def generate_rankings(data):
     # Scrape rankings
     for row in tbody.find_all("tr"):
         cols = row.find_all("td")
+        if cols[1].span.string is None:
+            continue
         students.append((int(cols[1].span.string.strip()), cols[0].a.string.strip()))
 
     # Sorting
