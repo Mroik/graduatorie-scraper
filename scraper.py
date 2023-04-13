@@ -85,7 +85,7 @@ def generate_rankings(data):
         cols = row.find_all("td")
         if cols[1].span.string is None:
             continue
-        students.append((int(cols[1].span.string.strip()), cols[0].a.string.strip()))
+        students.append((int(cols[1].span.string.strip()), cols[0].a.span.string.strip()))
 
     # Sorting
     for x in range(len(students) - 1):
